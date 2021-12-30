@@ -57,7 +57,10 @@ export const AuthState = ({ children }: any) => {
     }
   }
   const signUp = () => { }
-  const logout = () => { }
+  const logout = async () => { 
+    await AsyncStorage.removeItem('token')
+    dispatch({ type: 'logout' })
+  }
   const removeError = () => {
     dispatch({type: 'removeError'})
   }
