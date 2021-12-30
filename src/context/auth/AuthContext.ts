@@ -1,5 +1,5 @@
 import { createContext } from 'react';
-import { User } from '../../interfaces/LoginInterface';
+import { LoginData, User } from '../../interfaces/LoginInterface';
 
 export type AuthContextProps = {
   errorMessage: string;
@@ -7,7 +7,7 @@ export type AuthContextProps = {
   user: User | null;
   status: 'checking' | 'authenticated' | 'not-authenticated';
   signUp: () => void;
-  signIn: () => void;
+  signIn: (obj: LoginData) => void;
   logout: () => void;
   removeError: () => void;
 }

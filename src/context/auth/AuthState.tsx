@@ -1,4 +1,8 @@
-import React, { useReducer } from 'react'
+import React, { useEffect, useReducer } from 'react'
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+import coffeeApi from '../../api/coffeeApi'
+import { LoginData, LoginResponse } from '../../interfaces/LoginInterface'
 import { AuthContext } from './AuthContext'
 import { AuthInitialState, authReducer } from './AuthReducer'
 
@@ -11,11 +15,52 @@ export const AuthState = ({ children }: any) => {
   }
 
   const [state, dispatch] = useReducer(authReducer, initialState)
-  
-  const signUp = () => {}
-  const signIn = () => {}
-  const logout = () => {}
-  const removeError = () => {}
+
+  useEffect(() => {
+    checkToken()
+  }, [])
+
+  const checkToken = async () => {
+    try {
+      const tokenStorage = await AsyncStorage.getItem('token')
+      if(!tokenStorage) return dispatch({ type: 'notAuthenticated' })
+
+      const resp = await coffeeApi.get<LoginResponse>('/auth')
+
+      if(resp.status !== 200){
+        dispatch({ type: 'notAuthenticated' })
+        return
+      }
+
+      const { usuario, token } = resp.data
+      dispatch({ type: 'signUp', payload: { token, user: usuario } })
+      await AsyncStorage.setItem('token', token)
+
+    } catch (error) {
+      
+    }
+  }
+
+  const signIn = async ({ correo, password }: LoginData) => {
+    try {
+      const resp = await coffeeApi.post<LoginResponse>('/auth/login', { correo, password })
+      const { token, usuario } = resp.data
+      dispatch({ type: 'signUp', payload: { token, user: usuario } })
+      await AsyncStorage.setItem('token', token)
+
+    } catch (error: any) {
+      console.log(error.response.data.msg);
+      dispatch({ 
+        type: 'addError', 
+        payload: error.response.data.msg || 'Incorrect info'
+      })
+    }
+  }
+  const signUp = () => { }
+  const logout = () => { }
+  const removeError = () => {
+    dispatch({type: 'removeError'})
+  }
 
   return (
     <AuthContext.Provider value={{
