@@ -5,6 +5,7 @@ import coffeeApi from '../../api/coffeeApi'
 import { LoginData, LoginResponse } from '../../interfaces/LoginInterface'
 import { AuthContext } from './AuthContext'
 import { AuthInitialState, authReducer } from './AuthReducer'
+import { RegisterData } from '../../interfaces/RegisterInterface';
 
 export const AuthState = ({ children }: any) => {
   const initialState: AuthInitialState = {
@@ -56,7 +57,22 @@ export const AuthState = ({ children }: any) => {
       })
     }
   }
-  const signUp = () => { }
+  const signUp = async ({ nombre, correo, password }: RegisterData) => {
+    try {
+      const resp = await coffeeApi.post<LoginResponse>('/usuarios', { nombre, correo, password })
+      const { token, usuario } = resp.data
+
+      dispatch({ type: 'signUp', payload: { token, user: usuario } })
+      await AsyncStorage.setItem('token', token)
+    } catch (error: any) {
+      console.log(error.response.data);
+      dispatch({ 
+        type: 'addError', 
+        payload: error.response.data.errors[0].msg || 'Incorrect info'
+      })
+    }
+  }
+
   const logout = async () => { 
     await AsyncStorage.removeItem('token')
     dispatch({ type: 'logout' })
