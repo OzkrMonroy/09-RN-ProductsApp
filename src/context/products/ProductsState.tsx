@@ -29,8 +29,9 @@ export const ProductsState = ({ children }: any) => {
 
     }
 
-    const loadProductById = async (id: string) => {
-        throw new Error('Not implemented');
+    const loadProductById = async (id: string):Promise<Product> => {
+        const resp = await coffeeApi.get<Product>(`/productos/${id}`)
+        return resp.data
     };
 
     // TODO: cambiar ANY
