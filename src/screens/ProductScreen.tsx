@@ -11,7 +11,7 @@ interface Props extends StackScreenProps<ProductsStackParams, 'ProductScreen'> {
 
 export const ProductScreen = ({ route, navigation }: Props) => {
   const { name, id } = route.params
-  const { loadProductById } = useContext(ProductsContext)
+  const { loadProductById, addProduct, updateProduct } = useContext(ProductsContext)
 
   const { categories } = useCategories()
   const { _id, categoryId, productName, img, onChange, setFormValue } = useForm({
@@ -23,9 +23,9 @@ export const ProductScreen = ({ route, navigation }: Props) => {
 
   useEffect(() => {
     navigation.setOptions({
-      headerTitle: name || 'New Product'
+      headerTitle: productName || 'New Product'
     })
-  }, [])
+  }, [productName])
 
   useEffect(() => {
     loadProduct()
@@ -33,6 +33,7 @@ export const ProductScreen = ({ route, navigation }: Props) => {
 
   const loadProduct = async () => {
     if (!id) return
+
     const product = await loadProductById(id)
     setFormValue({
       productName,
@@ -42,6 +43,20 @@ export const ProductScreen = ({ route, navigation }: Props) => {
     })
   }
 
+  const saveOrUpdate = async () => {
+    console.log(id);
+    if (id) {
+      updateProduct(categoryId, productName, _id)
+    } else {
+      const tempCategoryId = categoryId.length > 0 ? categoryId : categories[0]._id
+      const productData = await addProduct(tempCategoryId, productName)
+      onChange(productData._id, '_id')
+    }
+  }
+
+
+
+  //TODO: Fix picker
   return (
     <View style={styles.container}>
       <ScrollView>
@@ -65,29 +80,31 @@ export const ProductScreen = ({ route, navigation }: Props) => {
 
         <Button
           title='Save'
-          onPress={() => { }}
+          onPress={saveOrUpdate}
           color={'#5856D6'}
         />
 
-        <View style={styles.buttonContainer}>
-          <Button
-            title='Camera'
-            onPress={() => { }}
-            color={'#5856D6'}
-          />
-          <View style={{ width: 10 }} />
-          <Button
-            title='Gallery'
-            onPress={() => { }}
-            color={'#5856D6'}
-          />
-        </View>
-        { img ? (
+        {_id.length > 0 ? (
+          <View style={styles.buttonContainer}>
+            <Button
+              title='Camera'
+              onPress={() => { }}
+              color={'#5856D6'}
+            />
+            <View style={{ width: 10 }} />
+            <Button
+              title='Gallery'
+              onPress={() => { }}
+              color={'#5856D6'}
+            />
+          </View>
+        ) : null}
+        {img ? (
           <Image
             source={{ uri: img }}
             style={{ width: '100%', height: 300 }}
           />
-        ): null }
+        ) : null}
       </ScrollView>
     </View>
   )

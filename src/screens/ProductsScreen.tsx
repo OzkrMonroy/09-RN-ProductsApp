@@ -1,13 +1,14 @@
 import { StackScreenProps } from '@react-navigation/stack'
-import React, { useContext, useEffect } from 'react'
-import { FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
+import React, { useContext, useEffect, useState } from 'react'
+import { FlatList, RefreshControl, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 import { ProductsContext } from '../context/products/ProductsContext'
 import { ProductsStackParams } from '../navigation/ProductsNavigator'
 
 interface Props extends StackScreenProps<ProductsStackParams, 'ProductsScreen'> { }
 
 export const ProductsScreen = ({ navigation }: Props) => {
-  const { products } = useContext(ProductsContext)
+  const { products, loadProducts } = useContext(ProductsContext)
+  const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
     navigation.setOptions({
@@ -23,6 +24,12 @@ export const ProductsScreen = ({ navigation }: Props) => {
     })
   }, [])
 
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await loadProducts()
+    setRefreshing(false)
+  }
+
   return (
     <View style={{ flex: 1, marginHorizontal: 10 }}>
       <FlatList
@@ -34,6 +41,19 @@ export const ProductsScreen = ({ navigation }: Props) => {
           </TouchableOpacity>
         )}
         ItemSeparatorComponent={() => <View style={styles.itemSeparator} />}
+        refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+              progressViewOffset={10}
+              progressBackgroundColor='white'
+              colors={['green', 'red', 'orange']}
+              style={{ backgroundColor: '#5856D6' }}
+              tintColor='white'
+              title='Refreshing...'
+              titleColor='white'
+            />
+          }
       />
     </View>
   )
@@ -44,8 +64,8 @@ const styles = StyleSheet.create({
     fontSize: 20
   },
   itemSeparator: {
-    borderBottomColor: 'rgba(0,0,0, .3)',
-    borderBottomWidth: 2,
+    borderBottomColor: 'rgba(0,0,0, .2)',
+    borderBottomWidth: 1,
     marginVertical: 5
   }
 })
