@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Product, ProductResponse } from '../../interfaces/Product';
 import { ProductsContext } from './ProductsContext';
 import coffeeApi from '../../api/coffeeApi';
+import { ImagePickerResponse } from 'react-native-image-picker';
 
 export const ProductsState = ({ children }: any) => {
 
@@ -49,9 +50,20 @@ export const ProductsState = ({ children }: any) => {
         return resp.data
     };
 
-    // TODO: cambiar ANY
-    const uploadImage = async (data: any, id: string) => {
+    const uploadImage = async (data: ImagePickerResponse, id: string) => {
+        const fileToUpload = {
+            uri: data.assets![0].uri,
+            type: data.assets![0].type,
+            name: data.assets![0].fileName
+        }
+        const formData = new FormData()
+        formData.append('archivo', fileToUpload)
 
+        try {
+            const resp = await coffeeApi.put(`/uploads/productos/${id}`, formData)
+        } catch (error) {
+            
+        }
     }
 
     return (

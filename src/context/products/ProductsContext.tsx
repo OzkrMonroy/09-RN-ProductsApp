@@ -1,4 +1,5 @@
 import { createContext } from 'react';
+import { ImagePickerResponse } from 'react-native-image-picker';
 import { Product } from '../../interfaces/Product';
 
 type ProductsContextProps = {
@@ -8,7 +9,7 @@ type ProductsContextProps = {
   updateProduct: ( categoryId: string, productName: string, productId: string ) => Promise<void>;
   deleteProduct: ( id: string ) => Promise<void>;
   loadProductById: ( id: string ) => Promise<Product>;
-  uploadImage: ( data: any, id: string ) => Promise<void>; // TODO: cambiar ANY
+  uploadImage: ( data: ImagePickerResponse, id: string ) => Promise<void>;
 }
 
 export const ProductsContext = createContext({} as ProductsContextProps);

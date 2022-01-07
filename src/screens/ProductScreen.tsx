@@ -1,5 +1,6 @@
-import React, { useContext, useEffect } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 import { StackScreenProps } from '@react-navigation/stack'
+import {launchCamera, launchImageLibrary} from 'react-native-image-picker';
 import { StyleSheet, Text, View, ScrollView, TextInput, Button, Image } from 'react-native'
 import { ProductsStackParams } from '../navigation/ProductsNavigator'
 import { Picker } from '@react-native-picker/picker'
@@ -11,7 +12,8 @@ interface Props extends StackScreenProps<ProductsStackParams, 'ProductScreen'> {
 
 export const ProductScreen = ({ route, navigation }: Props) => {
   const { name, id } = route.params
-  const { loadProductById, addProduct, updateProduct } = useContext(ProductsContext)
+  const { loadProductById, addProduct, updateProduct,uploadImage } = useContext(ProductsContext)
+  const [tempUri, setTempUri] = useState<string>()
 
   const { categories } = useCategories()
   const { _id, categoryId, productName, img, onChange, setFormValue } = useForm({
@@ -54,13 +56,32 @@ export const ProductScreen = ({ route, navigation }: Props) => {
     }
   }
 
+  const takePhoto = () => {
+    launchCamera({ mediaType: 'photo', quality: 0.5 }, (resp) => {
+      if(resp.didCancel) return
+      if(!resp.assets![0].uri) return
+
+      setTempUri(resp.assets![0].uri)
+      uploadImage(resp, _id)
+    })
+  }
+
+  const openGallery = () => {
+    launchImageLibrary({ mediaType: 'photo', quality: 0.5 }, (resp) => {
+      if(resp.didCancel) return
+      if(!resp.assets![0].uri) return
+
+      setTempUri(resp.assets![0].uri)
+      uploadImage(resp, _id)
+    })
+  }
 
 
   //TODO: Fix picker
   return (
     <View style={styles.container}>
       <ScrollView>
-        <Text style={styles.label}>{name || 'Product name'}</Text>
+        <Text style={styles.label}>{'Product name'}</Text>
         <TextInput
           placeholder='Product name'
           placeholderTextColor={'gray'}
@@ -73,7 +94,7 @@ export const ProductScreen = ({ route, navigation }: Props) => {
           onValueChange={(itemValue) => onChange(itemValue, 'categoryId')}
         >
           {categories.map(category => (
-            <Picker.Item label={category.nombre} value={category._id} key={category._id} />
+            <Picker.Item label={category.nombre} value={category._id} key={category._id} style={{ color: '#000' }}/>
           ))}
         </Picker>
         <Text style={styles.label}>Category</Text>
@@ -88,20 +109,26 @@ export const ProductScreen = ({ route, navigation }: Props) => {
           <View style={styles.buttonContainer}>
             <Button
               title='Camera'
-              onPress={() => { }}
+              onPress={takePhoto}
               color={'#5856D6'}
             />
             <View style={{ width: 10 }} />
             <Button
               title='Gallery'
-              onPress={() => { }}
+              onPress={openGallery}
               color={'#5856D6'}
             />
           </View>
         ) : null}
-        {img ? (
+        {(img && !tempUri) ? (
           <Image
             source={{ uri: img }}
+            style={{ width: '100%', height: 300 }}
+          />
+        ) : null}
+        {tempUri ? (
+          <Image
+            source={{ uri: tempUri }}
             style={{ width: '100%', height: 300 }}
           />
         ) : null}
@@ -118,7 +145,8 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: 18,
-    marginBottom: 5
+    marginBottom: 5,
+    color: '#000'
   },
   textInput: {
     borderWidth: 1,
@@ -127,7 +155,8 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     borderColor: 'rgba(0,0,0,.2)',
     height: 45,
-    marginBottom: 15
+    marginBottom: 15,
+    color: '#000'
   },
   buttonContainer: {
     flexDirection: 'row',
